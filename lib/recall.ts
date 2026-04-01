@@ -84,21 +84,27 @@ export interface RecallWebhookPayload {
 
 // ─── Calendar ─────────────────────────────────────────────────────────────────
 
-/**
- * Register a Google Calendar OAuth token with Recall.
- * Returns a RecallCalendarUser whose `id` we persist in `calendar_connections`.
- * Recall will auto-schedule recording bots for all future meetings with a join link.
- */
-export async function connectGoogleCalendar(tokenData: {
-  access_token: string
+export type CalendarProvider = 'google' | 'microsoft'
+
+interface CalendarTokenData {
+  access_token:  string
   refresh_token?: string
-  expiry?: string           // ISO string e.g. "2026-04-01T12:00:00Z"
-}): Promise<RecallCalendarUser> {
+  expiry?:       string   // ISO string e.g. "2026-04-01T12:00:00Z"
+}
+
+/**
+ * Internal: POST any calendar token to Recall.
+ * Recall platform values: "google_calendar" | "microsoft_365_calendar"
+ */
+async function connectCalendarToken(
+  recallPlatform: 'google_calendar' | 'microsoft_365_calendar',
+  tokenData: CalendarTokenData
+): Promise<RecallCalendarUser> {
   const res = await fetch(`${RECALL_API_BASE}/calendar/v2/token/`, {
     method: 'POST',
     headers: headers(),
     body: JSON.stringify({
-      platform: 'google_calendar',
+      platform: recallPlatform,
       token_data: {
         access_token: tokenData.access_token,
         ...(tokenData.refresh_token && { refresh_token: tokenData.refresh_token }),
@@ -109,10 +115,28 @@ export async function connectGoogleCalendar(tokenData: {
 
   if (!res.ok) {
     const body = await res.text()
-    throw new Error(`Recall connectGoogleCalendar failed [${res.status}]: ${body}`)
+    throw new Error(`Recall connectCalendar (${recallPlatform}) failed [${res.status}]: ${body}`)
   }
 
   return res.json() as Promise<RecallCalendarUser>
+}
+
+/**
+ * Register a Google Calendar OAuth token with Recall.
+ * Recall will auto-schedule bots for all future meetings found in this calendar
+ * — whether the meeting platform is Zoom, Google Meet, Teams, Webex, or Slack.
+ */
+export function connectGoogleCalendar(tokenData: CalendarTokenData): Promise<RecallCalendarUser> {
+  return connectCalendarToken('google_calendar', tokenData)
+}
+
+/**
+ * Register a Microsoft 365 (Outlook) Calendar OAuth token with Recall.
+ * Required for Teams users who schedule meetings via Outlook.
+ * Works identically to Google — bots join Zoom/Teams/Meet links found in events.
+ */
+export function connectMicrosoftCalendar(tokenData: CalendarTokenData): Promise<RecallCalendarUser> {
+  return connectCalendarToken('microsoft_365_calendar', tokenData)
 }
 
 /**

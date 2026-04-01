@@ -1,18 +1,24 @@
 /**
  * /api/recall/calendar
  *
- * POST   → called by the OAuth callback after Google sign-in succeeds.
- *          Registers the token with Recall and stores the connection.
+ * POST   ?provider=google|microsoft
+ *        Register an OAuth token with Recall + persist connection in DB.
+ *        Called by the Google and Microsoft OAuth callbacks.
  *
- * DELETE → called by the settings UI to disconnect the calendar.
- *          Removes the token from Recall and deletes from our DB.
+ * DELETE ?provider=google|microsoft
+ *        Remove token from Recall + delete from DB.
+ *        Called by the settings UI disconnect buttons.
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient, createServerAdminClient } from '@/lib/supabase/server'
-import { connectGoogleCalendar, disconnectCalendar } from '@/lib/recall'
+import {
+  connectGoogleCalendar,
+  connectMicrosoftCalendar,
+  disconnectCalendar,
+} from '@/lib/recall'
 import type { ApiError } from '@/types'
 
-// ─── POST: Connect a Google Calendar ─────────────────────────────────────────
+// ─── POST: Connect a calendar ─────────────────────────────────────────────────
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
@@ -22,7 +28,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json<ApiError>({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get org_id from profile
     const { data: profile } = await supabase
       .from('profiles')
       .select('org_id, role')
@@ -43,44 +48,45 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       )
     }
 
-    // Expect { access_token, refresh_token?, expiry? } in body
+    // provider query param: "google" (default) | "microsoft"
+    const provider = (req.nextUrl.searchParams.get('provider') ?? 'google') as 'google' | 'microsoft'
+    if (provider !== 'google' && provider !== 'microsoft') {
+      return NextResponse.json<ApiError>({ error: 'Invalid provider' }, { status: 400 })
+    }
+
     const body = await req.json()
     const { access_token, refresh_token, expiry } = body as {
-      access_token: string
+      access_token:  string
       refresh_token?: string
-      expiry?: string
+      expiry?:       string
     }
 
     if (!access_token) {
-      return NextResponse.json<ApiError>(
-        { error: 'access_token is required' },
-        { status: 400 }
-      )
+      return NextResponse.json<ApiError>({ error: 'access_token is required' }, { status: 400 })
     }
 
     // Register token with Recall
-    const recallCalendarUser = await connectGoogleCalendar({
-      access_token,
-      refresh_token,
-      expiry,
-    })
+    const recallCalendarUser =
+      provider === 'google'
+        ? await connectGoogleCalendar({ access_token, refresh_token, expiry })
+        : await connectMicrosoftCalendar({ access_token, refresh_token, expiry })
 
-    // Persist connection in our DB (upsert — re-connecting replaces existing row)
+    // Persist to DB — upsert on (user_id, provider) so reconnecting replaces stale token
     const adminClient = createServerAdminClient()
     const { error: upsertError } = await adminClient
       .from('calendar_connections')
       .upsert(
         {
-          user_id: user.id,
-          org_id: profile.org_id,
+          user_id:            user.id,
+          org_id:             profile.org_id,
           recall_calendar_id: recallCalendarUser.id,
-          provider: 'google',
+          provider,
         },
-        { onConflict: 'user_id' }   // one calendar connection per user
+        { onConflict: 'user_id,provider' }
       )
 
     if (upsertError) {
-      // Recall token registered but we couldn't persist — clean up to avoid orphan
+      // Recall token registered but we failed to persist — clean up to avoid orphan
       await disconnectCalendar(recallCalendarUser.id).catch(console.error)
       console.error('[Calendar Connect] DB upsert failed:', upsertError.message)
       return NextResponse.json<ApiError>(
@@ -89,8 +95,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       )
     }
 
-    console.log(`[Calendar Connect] User ${user.id} connected Google Calendar → Recall ID: ${recallCalendarUser.id}`)
-    return NextResponse.json({ success: true, recall_calendar_id: recallCalendarUser.id })
+    console.log(
+      `[Calendar Connect] User ${user.id} connected ${provider} calendar → Recall ID: ${recallCalendarUser.id}`
+    )
+    return NextResponse.json({ success: true, provider, recall_calendar_id: recallCalendarUser.id })
 
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'
@@ -99,7 +107,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 }
 
-// ─── DELETE: Disconnect calendar ──────────────────────────────────────────────
+// ─── DELETE: Disconnect a calendar ───────────────────────────────────────────
 
 export async function DELETE(req: NextRequest): Promise<NextResponse> {
   try {
@@ -109,13 +117,18 @@ export async function DELETE(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json<ApiError>({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const provider = (req.nextUrl.searchParams.get('provider') ?? 'google') as 'google' | 'microsoft'
+    if (provider !== 'google' && provider !== 'microsoft') {
+      return NextResponse.json<ApiError>({ error: 'Invalid provider' }, { status: 400 })
+    }
+
     const adminClient = createServerAdminClient()
 
-    // Find the connection for this user
     const { data: connection, error: fetchError } = await adminClient
       .from('calendar_connections')
       .select('recall_calendar_id')
       .eq('user_id', user.id)
+      .eq('provider', provider)
       .single()
 
     if (fetchError || !connection) {
@@ -125,11 +138,11 @@ export async function DELETE(req: NextRequest): Promise<NextResponse> {
     // Remove from Recall first (idempotent — won't throw on 404)
     await disconnectCalendar(connection.recall_calendar_id)
 
-    // Delete from our DB
     const { error: deleteError } = await adminClient
       .from('calendar_connections')
       .delete()
       .eq('user_id', user.id)
+      .eq('provider', provider)
 
     if (deleteError) {
       console.error('[Calendar Disconnect] DB delete failed:', deleteError.message)
@@ -139,7 +152,7 @@ export async function DELETE(req: NextRequest): Promise<NextResponse> {
       )
     }
 
-    console.log(`[Calendar Disconnect] User ${user.id} disconnected calendar`)
+    console.log(`[Calendar Disconnect] User ${user.id} disconnected ${provider} calendar`)
     return NextResponse.json({ success: true })
 
   } catch (error) {
