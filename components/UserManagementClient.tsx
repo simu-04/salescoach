@@ -1,8 +1,7 @@
 'use client'
 
 /**
- * Interactive user management table.
- * Admin can promote/demote roles and remove users from org.
+ * UserManagementClient — glass panel member table with neon role badges.
  */
 import { useState } from 'react'
 import type { Profile, UserRole } from '@/types'
@@ -19,10 +18,24 @@ const ROLE_LABELS: Record<UserRole, string> = {
   pending: 'Pending',
 }
 
-const ROLE_COLORS: Record<UserRole, string> = {
-  admin:   'bg-purple-500/15 text-purple-400 border-purple-500/30',
-  rep:     'bg-blue-500/15 text-blue-400 border-blue-500/30',
-  pending: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+const ROLE_STYLES: Record<UserRole, React.CSSProperties> = {
+  admin: {
+    background: 'rgba(139,92,246,0.1)',
+    color:      '#c4b5fd',
+    border:     '1px solid rgba(139,92,246,0.3)',
+    boxShadow:  '0 0 8px rgba(139,92,246,0.15)',
+  },
+  rep: {
+    background: 'rgba(14,165,233,0.1)',
+    color:      '#7dd3fc',
+    border:     '1px solid rgba(14,165,233,0.3)',
+    boxShadow:  '0 0 8px rgba(14,165,233,0.15)',
+  },
+  pending: {
+    background: 'rgba(251,191,36,0.08)',
+    color:      '#fcd34d',
+    border:     '1px solid rgba(251,191,36,0.25)',
+  },
 }
 
 export function UserManagementClient({ members: initial, currentUserId }: Props) {
@@ -31,17 +44,13 @@ export function UserManagementClient({ members: initial, currentUserId }: Props)
   const [error,   setError]   = useState<string | null>(null)
 
   async function updateRole(userId: string, role: UserRole) {
-    setLoading(userId + role)
-    setError(null)
+    setLoading(userId + role); setError(null)
     const res = await fetch('/api/users', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ user_id: userId, role }),
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId, role }),
     })
     if (res.ok) {
-      setMembers((prev) =>
-        prev.map((m) => m.id === userId ? { ...m, role } : m)
-      )
+      setMembers((prev) => prev.map((m) => m.id === userId ? { ...m, role } : m))
     } else {
       const d = await res.json()
       setError(d.error || 'Failed to update role')
@@ -51,8 +60,7 @@ export function UserManagementClient({ members: initial, currentUserId }: Props)
 
   async function removeUser(userId: string) {
     if (!confirm('Remove this user from the organization?')) return
-    setLoading(userId + 'remove')
-    setError(null)
+    setLoading(userId + 'remove'); setError(null)
     const res = await fetch(`/api/users?user_id=${userId}`, { method: 'DELETE' })
     if (res.ok) {
       setMembers((prev) => prev.filter((m) => m.id !== userId))
@@ -66,10 +74,21 @@ export function UserManagementClient({ members: initial, currentUserId }: Props)
   const pending = members.filter((m) => m.role === 'pending')
   const active  = members.filter((m) => m.role !== 'pending')
 
+  const panelStyle: React.CSSProperties = {
+    background:    'rgba(13,13,26,0.95)',
+    backdropFilter:'blur(16px)',
+    border:        '1px solid rgba(255,255,255,0.07)',
+    borderRadius:  '16px',
+    overflow:      'hidden',
+  }
+
   return (
     <div className="space-y-6">
       {error && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-red-400 text-sm">
+        <div
+          className="px-4 py-3 rounded-xl text-sm"
+          style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', color: '#f87171' }}
+        >
           {error}
         </div>
       )}
@@ -78,13 +97,16 @@ export function UserManagementClient({ members: initial, currentUserId }: Props)
       {pending.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <h2 className="text-sm font-semibold text-white">Pending Approval</h2>
-            <span className="bg-amber-500/20 text-amber-400 text-xs px-2 py-0.5 rounded-full font-medium">
+            <h2 className="text-base font-semibold text-white">Pending Approval</h2>
+            <span
+              className="text-xs px-2 py-0.5 rounded-full font-bold"
+              style={{ background: 'rgba(251,191,36,0.12)', color: '#fcd34d', border: '1px solid rgba(251,191,36,0.25)' }}
+            >
               {pending.length}
             </span>
           </div>
-          <div className="bg-slate-900 border border-slate-800 rounded-xl divide-y divide-slate-800">
-            {pending.map((member) => (
+          <div style={panelStyle}>
+            {pending.map((member, i) => (
               <MemberRow
                 key={member.id}
                 member={member}
@@ -92,6 +114,7 @@ export function UserManagementClient({ members: initial, currentUserId }: Props)
                 loading={loading}
                 onRoleChange={updateRole}
                 onRemove={removeUser}
+                hasBorder={i < pending.length - 1}
               />
             ))}
           </div>
@@ -100,16 +123,22 @@ export function UserManagementClient({ members: initial, currentUserId }: Props)
 
       {/* Active members */}
       <div>
-        <h2 className="text-sm font-semibold text-white mb-3">
-          Team Members <span className="text-slate-500 font-normal">({active.length})</span>
+        <h2 className="text-base font-semibold text-white mb-3">
+          Team Members{' '}
+          <span className="text-sm font-normal" style={{ color: 'rgba(255,255,255,0.3)' }}>
+            ({active.length})
+          </span>
         </h2>
         {active.length === 0 ? (
-          <div className="bg-slate-900 border border-dashed border-slate-800 rounded-xl p-8 text-center">
-            <p className="text-slate-500 text-sm">No active members yet.</p>
+          <div
+            className="p-10 text-center rounded-2xl"
+            style={{ border: '1px dashed rgba(255,255,255,0.08)', background: 'rgba(13,13,26,0.6)' }}
+          >
+            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.25)' }}>No active members yet.</p>
           </div>
         ) : (
-          <div className="bg-slate-900 border border-slate-800 rounded-xl divide-y divide-slate-800">
-            {active.map((member) => (
+          <div style={panelStyle}>
+            {active.map((member, i) => (
               <MemberRow
                 key={member.id}
                 member={member}
@@ -117,6 +146,7 @@ export function UserManagementClient({ members: initial, currentUserId }: Props)
                 loading={loading}
                 onRoleChange={updateRole}
                 onRemove={removeUser}
+                hasBorder={i < active.length - 1}
               />
             ))}
           </div>
@@ -124,72 +154,119 @@ export function UserManagementClient({ members: initial, currentUserId }: Props)
       </div>
 
       {/* Invite hint */}
-      <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-white mb-1">Invite your team</h3>
-        <p className="text-slate-400 text-sm">
-          Share your workspace ID with reps. They can join via the signup page and you&apos;ll see them here as pending.
-        </p>
+      <div
+        className="p-5 rounded-2xl"
+        style={{
+          background: 'rgba(99,102,241,0.04)',
+          border:     '1px solid rgba(99,102,241,0.15)',
+        }}
+      >
+        <div className="flex items-start gap-3">
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+            style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.25)' }}
+          >
+            <svg className="w-4 h-4" style={{ color: '#818cf8' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
+                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-white mb-1">Invite your team</h3>
+            <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              Share your workspace ID with reps. They join via the signup page and appear here as pending.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   )
 }
 
 function MemberRow({
-  member, isSelf, loading, onRoleChange, onRemove
+  member, isSelf, loading, onRoleChange, onRemove, hasBorder
 }: {
   member:       Profile
   isSelf:       boolean
   loading:      string | null
   onRoleChange: (id: string, role: UserRole) => void
   onRemove:     (id: string) => void
+  hasBorder:    boolean
 }) {
   const initials = (member.full_name || 'U')
     .split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
-
-  const joined = formatDistanceToNow(new Date(member.created_at), { addSuffix: true })
+  const joined   = formatDistanceToNow(new Date(member.created_at), { addSuffix: true })
 
   return (
-    <div className="flex items-center gap-4 px-5 py-4">
+    <div
+      className="flex items-center gap-4 px-5 py-4"
+      style={hasBorder ? { borderBottom: '1px solid rgba(255,255,255,0.05)' } : {}}
+    >
       {/* Avatar */}
       {member.avatar_url ? (
-        <img src={member.avatar_url} alt={member.full_name ?? ''} className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
+        <img
+          src={member.avatar_url}
+          alt={member.full_name ?? ''}
+          className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+          style={{ border: '1px solid rgba(255,255,255,0.1)' }}
+        />
       ) : (
-        <div className="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+        <div
+          className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+          style={{
+            background: 'linear-gradient(135deg, rgba(99,102,241,0.5), rgba(14,165,233,0.5))',
+            border: '1px solid rgba(99,102,241,0.3)',
+          }}
+        >
           {initials}
         </div>
       )}
 
       {/* Name + joined */}
       <div className="flex-1 min-w-0">
-        <div className="text-white text-sm font-medium truncate">
+        <div className="text-white text-sm font-semibold truncate">
           {member.full_name || 'Unnamed user'}
-          {isSelf && <span className="ml-2 text-xs text-slate-500">(you)</span>}
+          {isSelf && <span className="ml-2 text-xs font-normal" style={{ color: 'rgba(255,255,255,0.3)' }}>(you)</span>}
         </div>
-        <div className="text-slate-500 text-xs mt-0.5">Joined {joined}</div>
+        <div className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
+          Joined {joined}
+        </div>
       </div>
 
       {/* Role badge */}
-      <span className={`text-xs px-2 py-0.5 rounded-full border font-medium flex-shrink-0 ${ROLE_COLORS[member.role]}`}>
+      <span
+        className="text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wide flex-shrink-0"
+        style={ROLE_STYLES[member.role]}
+      >
         {ROLE_LABELS[member.role]}
       </span>
 
-      {/* Actions (not for self) */}
+      {/* Actions */}
       {!isSelf && (
         <div className="flex items-center gap-2 flex-shrink-0">
           {member.role === 'pending' && (
             <button
               onClick={() => onRoleChange(member.id, 'rep')}
               disabled={!!loading}
-              className="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg font-medium transition-colors disabled:opacity-60"
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all disabled:opacity-50 text-white"
+              style={{
+                background: 'linear-gradient(135deg, #6366f1, #0ea5e9)',
+                boxShadow:  '0 2px 8px rgba(99,102,241,0.35)',
+              }}
             >
-              Approve as Rep
+              Approve
             </button>
           )}
           {member.role === 'rep' && (
             <button
               onClick={() => onRoleChange(member.id, 'admin')}
               disabled={!!loading}
-              className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg font-medium transition-colors disabled:opacity-60 border border-slate-700"
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all disabled:opacity-50"
+              style={{
+                background: 'rgba(255,255,255,0.06)',
+                border:     '1px solid rgba(255,255,255,0.1)',
+                color:      'rgba(255,255,255,0.7)',
+              }}
             >
               Make Admin
             </button>
@@ -198,7 +275,12 @@ function MemberRow({
             <button
               onClick={() => onRoleChange(member.id, 'rep')}
               disabled={!!loading}
-              className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg font-medium transition-colors disabled:opacity-60 border border-slate-700"
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all disabled:opacity-50"
+              style={{
+                background: 'rgba(255,255,255,0.06)',
+                border:     '1px solid rgba(255,255,255,0.1)',
+                color:      'rgba(255,255,255,0.7)',
+              }}
             >
               Demote to Rep
             </button>
@@ -207,7 +289,10 @@ function MemberRow({
             onClick={() => onRemove(member.id)}
             disabled={!!loading}
             title="Remove from org"
-            className="text-slate-600 hover:text-red-400 transition-colors disabled:opacity-60"
+            className="transition-all disabled:opacity-50 p-1.5 rounded-lg"
+            style={{ color: 'rgba(255,255,255,0.2)' }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = '#f87171')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.2)')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}

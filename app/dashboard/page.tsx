@@ -103,7 +103,11 @@ export default async function DashboardPage() {
         </div>
         <Link
           href="/upload"
-          className="flex-shrink-0 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-lg font-medium transition-colors flex items-center gap-2"
+          className="flex-shrink-0 text-white text-sm px-4 py-2.5 rounded-xl font-semibold flex items-center gap-2 transition-all"
+          style={{
+            background: 'linear-gradient(135deg, #6366f1, #0ea5e9)',
+            boxShadow: '0 4px 16px rgba(99,102,241,0.35)',
+          }}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -160,7 +164,7 @@ function PendingApprovalScreen({ name }: { name?: string | null }) {
 
 function EmptyState() {
   return (
-    <div className="border border-dashed border-slate-800 rounded-2xl p-16 text-center">
+    <div className="rounded-2xl p-16 text-center" style={{ border: '1px dashed rgba(255,255,255,0.08)', background: 'rgba(13,13,26,0.6)' }}>
       <div className="mx-auto w-14 h-14 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center mb-5">
         <svg className="w-7 h-7 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
@@ -173,7 +177,8 @@ function EmptyState() {
       </p>
       <Link
         href="/upload"
-        className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-sm px-5 py-2.5 rounded-lg font-medium transition-colors"
+        className="inline-flex items-center gap-2 text-white text-sm px-5 py-2.5 rounded-xl font-semibold transition-all"
+        style={{ background: 'linear-gradient(135deg, #6366f1, #0ea5e9)', boxShadow: '0 4px 16px rgba(99,102,241,0.35)' }}
       >
         Upload your first call
       </Link>

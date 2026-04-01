@@ -1,6 +1,5 @@
 /**
- * CallCard — one row in the dashboard call list.
- * Includes delete button for call owners and admins.
+ * CallCard — glass card with 3D hover lift + verdict glow accent.
  */
 'use client'
 
@@ -32,13 +31,23 @@ function formatFileSize(bytes: number | null): string {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`
 }
 
+const VERDICT_ACCENT: Record<string, { left: string; glow: string; hover: string }> = {
+  won:     { left: 'rgba(34,197,94,0.7)',   glow: '0 8px 32px rgba(34,197,94,0.12)',   hover: 'rgba(34,197,94,0.15)' },
+  at_risk: { left: 'rgba(251,191,36,0.7)',  glow: '0 8px 32px rgba(251,191,36,0.12)',  hover: 'rgba(251,191,36,0.1)' },
+  lost:    { left: 'rgba(239,68,68,0.7)',   glow: '0 8px 32px rgba(239,68,68,0.12)',   hover: 'rgba(239,68,68,0.08)' },
+  null:    { left: 'rgba(99,102,241,0.5)',  glow: '0 8px 32px rgba(99,102,241,0.1)',   hover: 'rgba(99,102,241,0.08)' },
+}
+
 export function CallCard({ call, talkRatio, topRecommendation, currentUserId, currentUserRole }: CallCardProps) {
-  const [deleting, setDeleting] = useState(false)
+  const [deleting, setDeleting]   = useState(false)
+  const [hovered, setHovered]     = useState(false)
   const router = useRouter()
 
   const isProcessing = call.status === 'processing'
   const isFailed     = call.status === 'failed'
   const canDelete    = currentUserRole === 'admin' || call.user_id === currentUserId
+
+  const accent = VERDICT_ACCENT[call.verdict ?? 'null'] ?? VERDICT_ACCENT['null']
 
   async function handleDelete(e: React.MouseEvent) {
     e.preventDefault()
@@ -56,30 +65,46 @@ export function CallCard({ call, talkRatio, topRecommendation, currentUserId, cu
   }
 
   return (
-    <div className="group bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition-all duration-150">
-      <Link href={`/calls/${call.id}`} className="block">
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="group relative rounded-2xl overflow-hidden transition-all duration-200"
+      style={{
+        background: hovered
+          ? `linear-gradient(135deg, rgba(13,13,26,0.98) 0%, ${accent.hover} 100%)`
+          : 'rgba(13,13,26,0.95)',
+        border: '1px solid rgba(255,255,255,0.07)',
+        borderLeft: `3px solid ${accent.left}`,
+        boxShadow: hovered
+          ? `${accent.glow}, 0 16px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.04)`
+          : '0 2px 8px rgba(0,0,0,0.3)',
+        transform: hovered ? 'translateY(-2px) scale(1.002)' : 'translateY(0) scale(1)',
+        backdropFilter: 'blur(16px)',
+      }}
+    >
+      <Link href={`/calls/${call.id}`} className="block p-5">
         <div className="flex items-start justify-between gap-4">
           {/* Left: file info + verdict */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 flex-wrap">
               <VerdictBadge verdict={call.verdict} size="sm" />
-              <h3 className="text-sm font-medium text-white truncate">
+              <h3 className="text-sm font-semibold text-white truncate">
                 {call.file_name}
               </h3>
             </div>
 
-            {/* Rep name (for admins seeing all org calls) */}
+            {/* Rep name for admins */}
             {call.rep_name && currentUserRole === 'admin' && (
-              <p className="text-xs text-slate-500 mt-1">
-                by <span className="text-slate-400">{call.rep_name}</span>
+              <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                by <span style={{ color: 'rgba(255,255,255,0.5)' }}>{call.rep_name}</span>
               </p>
             )}
 
             {/* Status / verdict reason */}
             <div className="mt-2">
               {isProcessing && (
-                <p className="text-sm text-slate-400 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+                <p className="text-sm flex items-center gap-2" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                  <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
                   Analyzing call...
                 </p>
               )}
@@ -89,7 +114,7 @@ export function CallCard({ call, talkRatio, topRecommendation, currentUserId, cu
                 </p>
               )}
               {call.status === 'complete' && call.verdict_reason && (
-                <p className="text-sm text-slate-300 line-clamp-1">
+                <p className="text-sm line-clamp-1" style={{ color: 'rgba(255,255,255,0.65)' }}>
                   {call.verdict_reason}
                 </p>
               )}
@@ -98,8 +123,10 @@ export function CallCard({ call, talkRatio, topRecommendation, currentUserId, cu
             {/* Top recommendation */}
             {topRecommendation && call.status === 'complete' && call.verdict !== 'won' && (
               <div className="mt-2 flex items-start gap-1.5">
-                <span className="text-amber-400 text-xs mt-0.5">→</span>
-                <p className="text-xs text-slate-400 line-clamp-1">{topRecommendation}</p>
+                <span className="text-amber-400 text-xs mt-0.5 flex-shrink-0">→</span>
+                <p className="text-xs line-clamp-1" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                  {topRecommendation}
+                </p>
               </div>
             )}
           </div>
@@ -107,7 +134,7 @@ export function CallCard({ call, talkRatio, topRecommendation, currentUserId, cu
           {/* Right: metadata + delete */}
           <div className="flex flex-col items-end gap-2 shrink-0">
             <div className="flex items-center gap-2">
-              <p className="text-xs text-slate-500">
+              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
                 {formatDistanceToNow(new Date(call.created_at), { addSuffix: true })}
               </p>
               {canDelete && (
@@ -115,7 +142,10 @@ export function CallCard({ call, talkRatio, topRecommendation, currentUserId, cu
                   onClick={handleDelete}
                   disabled={deleting}
                   title="Delete call"
-                  className="opacity-0 group-hover:opacity-100 text-slate-700 hover:text-red-400 transition-all disabled:opacity-50"
+                  className="opacity-0 group-hover:opacity-100 transition-all disabled:opacity-50"
+                  style={{ color: 'rgba(255,255,255,0.2)' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(239,68,68,0.8)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.2)')}
                 >
                   {deleting ? (
                     <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -131,7 +161,7 @@ export function CallCard({ call, talkRatio, topRecommendation, currentUserId, cu
                 </button>
               )}
             </div>
-            <div className="flex items-center gap-3 text-xs text-slate-500">
+            <div className="flex items-center gap-3 text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>
               {call.duration_seconds && <span>{formatDuration(call.duration_seconds)}</span>}
               {call.file_size        && <span>{formatFileSize(call.file_size)}</span>}
             </div>
@@ -140,7 +170,7 @@ export function CallCard({ call, talkRatio, topRecommendation, currentUserId, cu
 
         {/* Talk ratio */}
         {talkRatio && call.status === 'complete' && (
-          <div className="mt-4 pt-4 border-t border-slate-800">
+          <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
             <TalkRatioBar repRatio={talkRatio.rep} prospectRatio={talkRatio.prospect} />
           </div>
         )}
