@@ -201,8 +201,8 @@ export function Sidebar({ profile, org, onClose }: SidebarProps) {
             <img
               src={profile.avatar_url}
               alt={profile.full_name || 'User'}
-              className="w-9 h-9 rounded-full object-cover flex-shrink-0 ring-2"
-              style={{ ringColor: 'rgba(99,102,241,0.3)' }}
+              className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+              style={{ outline: '2px solid rgba(99,102,241,0.3)', outlineOffset: '1px' }}
             />
           ) : (
             <div
