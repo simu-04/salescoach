@@ -97,15 +97,27 @@ export interface ApiError {
 
 // ─── Insight Engine (Claude output schema) ────────────────────────────────────
 
+export type NextStepClarity  = 'clear' | 'vague' | 'none'
+export type EngagementArc    = 'rising' | 'flat' | 'declining' | 'mixed'
+
+export interface CoachingPoints {
+  did_well:        string
+  fix_immediately: string
+}
+
 export interface InsightEngineOutput {
   summary:              string
   verdict:              Verdict
   verdict_reason:       string
   objections:           string[]
   risk_signals:         string[]
+  buying_signals:       string[]          // v2 — positive moments
   competitor_mentions:  string[]
   talk_ratio:           TalkRatio
   top_recommendation:   string
+  coaching:             CoachingPoints | null   // v2 — rep-specific coaching
+  next_step_clarity:    NextStepClarity         // v2
+  engagement_arc:       EngagementArc           // v2
 }
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────

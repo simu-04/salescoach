@@ -18,6 +18,7 @@ interface CallCardProps {
   topRecommendation?: string
   currentUserId:      string
   currentUserRole:    'admin' | 'rep' | 'pending'
+  healthScore?:       number   // 0-100, computed by DashboardClient
 }
 
 function formatDuration(seconds: number | null): string {
@@ -39,7 +40,7 @@ const VERDICT_ACCENT: Record<string, { left: string; glow: string; hover: string
   null:    { left: 'rgba(99,102,241,0.5)', glow: '0 8px 32px rgba(99,102,241,0.1)',  hover: 'rgba(99,102,241,0.03)' },
 }
 
-export function CallCard({ call, talkRatio, topRecommendation, currentUserId, currentUserRole }: CallCardProps) {
+export function CallCard({ call, talkRatio, topRecommendation, currentUserId, currentUserRole, healthScore }: CallCardProps) {
   const [hovered,       setHovered]       = useState(false)
   const [confirmOpen,   setConfirmOpen]   = useState(false)
   const [deleting,      setDeleting]      = useState(false)
@@ -144,7 +145,19 @@ export function CallCard({ call, talkRatio, topRecommendation, currentUserId, cu
             {/* Right */}
             <div className="flex flex-col items-end gap-2 shrink-0">
               <div className="flex items-center gap-2">
-                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                {healthScore !== undefined && (
+                  <span
+                    className="text-[10px] font-bold px-1.5 py-0.5 rounded"
+                    style={{
+                      background: healthScore >= 70 ? 'rgba(34,197,94,0.1)' : healthScore >= 45 ? 'rgba(251,191,36,0.1)' : 'rgba(239,68,68,0.1)',
+                      color: healthScore >= 70 ? '#4ade80' : healthScore >= 45 ? '#fbbf24' : '#f87171',
+                    }}
+                    title={`Health score: ${healthScore}/100`}
+                  >
+                    {healthScore}
+                  </span>
+                )}
+                <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
                   {formatDistanceToNow(new Date(call.created_at), { addSuffix: true })}
                 </p>
                 {canDelete && (

@@ -1,13 +1,14 @@
 'use client'
 
 /**
- * Left sidebar navigation — glassmorphism dark 3D design.
+ * Left sidebar navigation — glassmorphism design, theme-aware.
  * Role-aware: admins see User Management, reps don't, pending see Dashboard only.
  */
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { createBrowserClient } from '@/lib/supabase/client'
+import { ThemeToggle } from '@/components/ThemeToggle'
 import type { Profile, Organization } from '@/types'
 
 interface SidebarProps {
@@ -113,10 +114,10 @@ export function Sidebar({ profile, org, onClose }: SidebarProps) {
     <aside
       className="flex flex-col h-full w-64 py-5 px-3"
       style={{
-        background: 'rgba(7, 7, 15, 0.92)',
+        background: 'var(--sidebar-bg)',
         backdropFilter: 'blur(24px) saturate(1.4)',
         WebkitBackdropFilter: 'blur(24px) saturate(1.4)',
-        borderRight: '1px solid rgba(255,255,255,0.07)',
+        borderRight: '1px solid var(--card-border)',
       }}
     >
       {/* ── Brand ─────────────────────────────────────────── */}
@@ -132,10 +133,10 @@ export function Sidebar({ profile, org, onClose }: SidebarProps) {
           </svg>
         </div>
         <div className="flex-1 min-w-0">
-          <div className="font-bold text-base text-white leading-tight truncate tracking-tight">
+          <div className="font-bold text-base leading-tight truncate tracking-tight" style={{ color: 'var(--text-primary)' }}>
             {org?.name || 'Sales Intel'}
           </div>
-          <div className="text-xs mt-0.5 truncate" style={{ color: 'rgba(255,255,255,0.3)' }}>
+          <div className="text-xs mt-0.5 truncate" style={{ color: 'var(--text-faint)' }}>
             {org?.slug || 'workspace'}
           </div>
         </div>
@@ -145,7 +146,7 @@ export function Sidebar({ profile, org, onClose }: SidebarProps) {
             onClick={onClose}
             aria-label="Close menu"
             className="lg:hidden p-1 rounded-lg transition-colors flex-shrink-0"
-            style={{ color: 'rgba(255,255,255,0.3)' }}
+            style={{ color: 'var(--text-muted)' }}
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -155,7 +156,7 @@ export function Sidebar({ profile, org, onClose }: SidebarProps) {
       </div>
 
       {/* ── Nav section label ─────────────────────────────── */}
-      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] px-3 mb-2" style={{ color: 'rgba(255,255,255,0.25)' }}>
+      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] px-3 mb-2" style={{ color: 'var(--text-faint)' }}>
         Navigation
       </p>
 
@@ -169,9 +170,9 @@ export function Sidebar({ profile, org, onClose }: SidebarProps) {
               href={item.href}
               className={`
                 flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150
-                ${isActive ? 'nav-active text-white' : 'hover:bg-white/[0.04]'}
+                ${isActive ? 'nav-active' : 'hover:bg-white/[0.04]'}
               `}
-              style={isActive ? {} : { color: 'rgba(255,255,255,0.45)' }}
+              style={isActive ? { color: 'var(--text-primary)' } : { color: 'var(--text-secondary)' }}
             >
               <span className={isActive ? 'text-indigo-400' : ''}>
                 {item.icon}
@@ -204,10 +205,15 @@ export function Sidebar({ profile, org, onClose }: SidebarProps) {
         </div>
       )}
 
+      {/* ── Theme toggle ──────────────────────────────────── */}
+      <div className="mb-3 px-1">
+        <ThemeToggle />
+      </div>
+
       {/* ── User profile ──────────────────────────────────── */}
       <div
         className="mt-1 pt-3 px-2"
-        style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+        style={{ borderTop: '1px solid var(--border-subtle)' }}
       >
         <div className="flex items-center gap-3">
           {profile.avatar_url ? (
@@ -229,7 +235,7 @@ export function Sidebar({ profile, org, onClose }: SidebarProps) {
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-white truncate leading-tight">
+            <div className="text-sm font-medium truncate leading-tight" style={{ color: 'var(--text-primary)' }}>
               {profile.full_name || 'User'}
             </div>
             <span className={`inline-flex items-center text-[10px] px-2 py-0.5 rounded-full border font-semibold uppercase tracking-wide mt-1 ${roleBadgeClass}`}>
@@ -241,7 +247,7 @@ export function Sidebar({ profile, org, onClose }: SidebarProps) {
             disabled={signing}
             title="Sign out"
             className="transition-colors flex-shrink-0 p-1 rounded-lg hover:bg-white/5"
-            style={{ color: 'rgba(255,255,255,0.25)' }}
+            style={{ color: 'var(--text-faint)' }}
           >
             <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
