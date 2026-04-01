@@ -34,8 +34,8 @@ export default async function UsersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-white">User Management</h1>
-        <p className="text-sm text-slate-400 mt-0.5">
+        <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>User Management</h1>
+        <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>
           Manage your team members and their access levels.
         </p>
       </div>

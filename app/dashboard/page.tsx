@@ -73,10 +73,10 @@ function PendingApprovalScreen({ name }: { name?: string | null }) {
             d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       </div>
-      <h1 className="text-2xl font-bold text-white mb-3">
+      <h1 className="text-2xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
         You&apos;re on the waitlist{name ? `, ${name.split(' ')[0]}` : ''}
       </h1>
-      <p className="text-base max-w-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.4)' }}>
+      <p className="text-base max-w-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
         Your workspace admin needs to approve your account before you can view and upload calls.
       </p>
       <div

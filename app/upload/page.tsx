@@ -24,10 +24,10 @@ export default async function UploadPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] py-12">
       <div className="text-center mb-10">
-        <h1 className="text-2xl font-bold text-white mb-3">
+        <h1 className="text-2xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
           Upload a call recording
         </h1>
-        <p className="text-base text-slate-400 max-w-md">
+        <p className="text-base max-w-md" style={{ color: 'var(--text-secondary)' }}>
           Drop in any sales call. In 60–90 seconds you'll have a verdict,
           objection map, risk signals, and one coaching recommendation.
         </p>
@@ -55,9 +55,9 @@ export default async function UploadPage() {
           },
         ].map((item) => (
           <div key={item.step} className="text-center">
-            <p className="text-xs font-bold text-slate-600 mb-1">{item.step}</p>
-            <p className="text-sm font-semibold text-white mb-1">{item.label}</p>
-            <p className="text-xs text-slate-500 leading-relaxed">{item.desc}</p>
+            <p className="text-xs font-bold mb-1" style={{ color: 'var(--text-muted)' }}>{item.step}</p>
+            <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>{item.label}</p>
+            <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{item.desc}</p>
           </div>
         ))}
       </div>
