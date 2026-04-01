@@ -35,7 +35,7 @@ function parseTranscript(raw: string): Paragraph[] {
 
   for (const utterance of utterances) {
     // Match "Speaker: text" — speaker label can be multi-word (e.g. "Speaker 0")
-    const match = utterance.match(/^([^:\n]+):\s*(.+)$/s)
+    const match = utterance.match(/^([^:\n]+):\s*([\s\S]+)$/)
     if (!match) {
       // No speaker label — append to last paragraph or create generic one
       if (paragraphs.length > 0) {
