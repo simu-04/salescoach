@@ -84,6 +84,8 @@ export function Sidebar({ profile, org, onClose }: SidebarProps) {
   async function handleSignOut() {
     setSigning(true)
     await supabase.auth.signOut()
+    // Refresh server components so the layout drops the sidebar immediately
+    router.refresh()
     router.push('/login')
   }
 
