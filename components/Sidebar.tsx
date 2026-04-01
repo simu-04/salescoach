@@ -2,8 +2,8 @@
 
 /**
  * Left sidebar navigation.
- * Role-aware: admins see User Management, reps don't.
- * Mobile: collapses to icon bar.
+ * Role-aware: admins see User Management, reps don't, pending see Dashboard only.
+ * Accepts onClose for mobile drawer behaviour.
  */
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -14,6 +14,7 @@ import type { Profile, Organization } from '@/types'
 interface SidebarProps {
   profile:  Profile
   org:      Organization | null
+  onClose?: () => void
 }
 
 interface NavItem {
@@ -27,7 +28,7 @@ const navItems: NavItem[] = [
   {
     label: 'Dashboard',
     href:  '/dashboard',
-    roles: ['admin', 'rep'],
+    roles: ['admin', 'rep', 'pending'],  // pending can see dashboard (shows waiting state)
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
@@ -71,14 +72,14 @@ const navItems: NavItem[] = [
   },
 ]
 
-export function Sidebar({ profile, org }: SidebarProps) {
+export function Sidebar({ profile, org, onClose }: SidebarProps) {
   const pathname  = usePathname()
   const router    = useRouter()
   const supabase  = createBrowserClient()
   const [signing, setSigning] = useState(false)
 
   const visibleItems = navItems.filter((item) =>
-    item.roles.includes(profile.role)
+    item.roles.includes(profile.role as 'admin' | 'rep' | 'pending')
   )
 
   async function handleSignOut() {
@@ -98,12 +99,12 @@ export function Sidebar({ profile, org }: SidebarProps) {
     admin:   'bg-purple-500/15 text-purple-400 border-purple-500/30',
     rep:     'bg-blue-500/15 text-blue-400 border-blue-500/30',
     pending: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-  }[profile.role]
+  }[profile.role] ?? 'bg-slate-500/15 text-slate-400 border-slate-500/30'
 
   return (
-    <aside className="flex flex-col h-full w-60 bg-slate-950 border-r border-slate-800 py-4 px-3">
+    <aside className="flex flex-col h-full w-64 bg-slate-950 border-r border-slate-800 py-4 px-3">
 
-      {/* Brand */}
+      {/* Brand + mobile close button */}
       <div className="flex items-center gap-2.5 px-2 mb-6">
         <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
           <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -111,14 +112,26 @@ export function Sidebar({ profile, org }: SidebarProps) {
               d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
           </svg>
         </div>
-        <div className="min-w-0">
-          <div className="text-white font-semibold text-sm leading-tight truncate">
+        <div className="flex-1 min-w-0">
+          <div className="text-white font-semibold text-base leading-tight truncate">
             {org?.name || 'Sales Intel'}
           </div>
           <div className="text-slate-500 text-xs truncate">
             {org?.slug || 'workspace'}
           </div>
         </div>
+        {/* Close button — only visible on mobile */}
+        {onClose && (
+          <button
+            onClick={onClose}
+            aria-label="Close menu"
+            className="lg:hidden text-slate-500 hover:text-white transition-colors flex-shrink-0 p-1"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Nav items */}
@@ -129,7 +142,7 @@ export function Sidebar({ profile, org }: SidebarProps) {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-base font-medium transition-colors ${
                 isActive
                   ? 'bg-slate-800 text-white'
                   : 'text-slate-400 hover:text-white hover:bg-slate-900'
@@ -147,8 +160,8 @@ export function Sidebar({ profile, org }: SidebarProps) {
       {/* Pending state warning */}
       {profile.role === 'pending' && (
         <div className="mx-2 mb-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-          <p className="text-amber-400 text-xs font-medium mb-0.5">Pending approval</p>
-          <p className="text-amber-500/70 text-xs">
+          <p className="text-amber-400 text-sm font-medium mb-0.5">Pending approval</p>
+          <p className="text-amber-500/70 text-xs leading-relaxed">
             Your admin needs to approve your account before you can access all features.
           </p>
         </div>
@@ -161,15 +174,15 @@ export function Sidebar({ profile, org }: SidebarProps) {
             <img
               src={profile.avatar_url}
               alt={profile.full_name || 'User'}
-              className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+              className="w-9 h-9 rounded-full object-cover flex-shrink-0"
             />
           ) : (
-            <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+            <div className="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
               {initials}
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <div className="text-white text-sm font-medium truncate leading-tight">
+            <div className="text-white text-base font-medium truncate leading-tight">
               {profile.full_name || 'User'}
             </div>
             <div className={`inline-flex items-center text-xs px-1.5 py-0.5 rounded border font-medium mt-0.5 ${roleBadgeColor}`}>
@@ -182,7 +195,7 @@ export function Sidebar({ profile, org }: SidebarProps) {
             title="Sign out"
             className="text-slate-600 hover:text-slate-400 transition-colors flex-shrink-0"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
                 d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>

@@ -14,7 +14,9 @@ export default function LoginPage() {
   const [error, setError]       = useState<string | null>(null)
 
   const supabase = createBrowserClient()
-  const redirectTo = `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`
+  // Always derive the redirect URL from the current browser origin so it works
+  // in both local dev (localhost) and production (Vercel) without any env config.
+  const redirectTo = `${typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_APP_URL ?? '')}/auth/callback`
 
   async function signInWithGoogle() {
     setLoading('google')
@@ -73,8 +75,8 @@ export default function LoginPage() {
         </div>
 
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-7 shadow-xl">
-          <h1 className="text-white font-semibold text-lg mb-1">Sign in</h1>
-          <p className="text-slate-400 text-sm mb-6">
+          <h1 className="text-white font-semibold text-xl mb-1">Sign in</h1>
+          <p className="text-slate-400 text-base mb-6">
             Access your team&apos;s call intelligence.
           </p>
 
@@ -110,7 +112,7 @@ export default function LoginPage() {
                 <button
                   onClick={signInWithGoogle}
                   disabled={!!loading}
-                  className="w-full flex items-center justify-center gap-3 bg-white hover:bg-slate-100 text-slate-900 font-medium text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-60"
+                  className="w-full flex items-center justify-center gap-3 bg-white hover:bg-slate-100 text-slate-900 font-medium text-base px-4 py-3 rounded-xl transition-colors disabled:opacity-60"
                 >
                   {loading === 'google' ? (
                     <Spinner dark />
@@ -128,7 +130,7 @@ export default function LoginPage() {
                 <button
                   onClick={signInWithGitHub}
                   disabled={!!loading}
-                  className="w-full flex items-center justify-center gap-3 bg-slate-800 hover:bg-slate-700 text-white font-medium text-sm px-4 py-2.5 rounded-xl border border-slate-700 transition-colors disabled:opacity-60"
+                  className="w-full flex items-center justify-center gap-3 bg-slate-800 hover:bg-slate-700 text-white font-medium text-base px-4 py-3 rounded-xl border border-slate-700 transition-colors disabled:opacity-60"
                 >
                   {loading === 'github' ? (
                     <Spinner />
@@ -159,12 +161,12 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-base text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
                 />
                 <button
                   type="submit"
                   disabled={!!loading || !email}
-                  className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white font-medium text-sm px-4 py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2"
+                  className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white font-medium text-base px-4 py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
                 >
                   {loading === 'email' ? <Spinner /> : null}
                   Send magic link

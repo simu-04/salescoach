@@ -1,6 +1,7 @@
 /**
  * Dashboard — the manager and rep home base.
  * Admins see all org calls. Reps see their own.
+ * Pending users see an approval-waiting screen.
  * At-risk and lost calls bubble to the top.
  */
 import Link from 'next/link'
@@ -24,6 +25,11 @@ export default async function DashboardPage() {
     .single()
 
   if (!profile?.org_id) redirect('/onboarding')
+
+  // Pending users see a simple waiting screen — nothing else to show yet
+  if (profile.role === 'pending') {
+    return <PendingApprovalScreen name={profile.full_name} />
+  }
 
   const { data: calls = [], error: callsError } = await supabase
     .from('calls')
@@ -84,12 +90,12 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-white">
+          <h1 className="text-2xl font-bold text-white">
             {isAdmin ? 'Call Intelligence' : 'My Calls'}
           </h1>
-          <p className="text-sm text-slate-400 mt-0.5">
+          <p className="text-base text-slate-400 mt-1">
             {isAdmin
               ? 'Every call analyzed. One metric: conversion rate.'
               : 'Your uploaded calls and analysis.'}
@@ -97,7 +103,7 @@ export default async function DashboardPage() {
         </div>
         <Link
           href="/upload"
-          className="bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+          className="flex-shrink-0 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-lg font-medium transition-colors flex items-center gap-2"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -129,6 +135,29 @@ export default async function DashboardPage() {
   )
 }
 
+function PendingApprovalScreen({ name }: { name?: string | null }) {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+      <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-6">
+        <svg className="w-8 h-8 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <h1 className="text-2xl font-bold text-white mb-3">
+        You&apos;re on the waitlist{name ? `, ${name.split(' ')[0]}` : ''}
+      </h1>
+      <p className="text-base text-slate-400 max-w-sm leading-relaxed">
+        Your workspace admin needs to approve your account before you can view and upload calls.
+        Check back soon — or ping your manager directly.
+      </p>
+      <div className="mt-8 px-4 py-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-400 text-sm max-w-xs">
+        Status: <span className="font-semibold">Pending approval</span>
+      </div>
+    </div>
+  )
+}
+
 function EmptyState() {
   return (
     <div className="border border-dashed border-slate-800 rounded-2xl p-16 text-center">
@@ -138,8 +167,8 @@ function EmptyState() {
             d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
         </svg>
       </div>
-      <h3 className="text-white font-semibold mb-2">No calls yet</h3>
-      <p className="text-sm text-slate-400 mb-6 max-w-xs mx-auto">
+      <h3 className="text-white font-semibold text-lg mb-2">No calls yet</h3>
+      <p className="text-base text-slate-400 mb-6 max-w-xs mx-auto">
         Upload your first call recording. Full analysis — verdict, objections, coaching tip — in under 2 minutes.
       </p>
       <Link

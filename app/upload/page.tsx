@@ -27,7 +27,7 @@ export default async function UploadPage() {
         <h1 className="text-2xl font-bold text-white mb-3">
           Upload a call recording
         </h1>
-        <p className="text-slate-400 max-w-md">
+        <p className="text-base text-slate-400 max-w-md">
           Drop in any sales call. In 60–90 seconds you'll have a verdict,
           objection map, risk signals, and one coaching recommendation.
         </p>

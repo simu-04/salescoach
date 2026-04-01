@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { createServerClient } from '@/lib/supabase/server'
-import { Sidebar } from '@/components/Sidebar'
+import { AppShell } from '@/components/AppShell'
 import type { Profile, Organization } from '@/types'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -42,15 +42,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="en" className="dark">
       <body className={`${inter.className} bg-slate-950 text-white antialiased`}>
         {profile ? (
-          /* App shell: fixed sidebar + scrollable content */
-          <div className="flex h-screen overflow-hidden">
-            <Sidebar profile={profile} org={org} />
-            <main className="flex-1 overflow-y-auto">
-              <div className="max-w-5xl mx-auto px-6 py-8">
-                {children}
-              </div>
-            </main>
-          </div>
+          /* App shell: responsive sidebar (mobile drawer + desktop fixed) */
+          <AppShell profile={profile} org={org}>
+            {children}
+          </AppShell>
         ) : (
           /* Auth / onboarding pages own their full-screen layout */
           children

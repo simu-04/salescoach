@@ -38,6 +38,8 @@ export default function OnboardingPage() {
     })
     const data = await res.json()
     if (!res.ok) { setError(data.error || 'Failed to create organization'); setLoading(false); return }
+    // Refresh server components so the layout picks up the new org + admin role
+    router.refresh()
     router.push('/dashboard')
   }
 
@@ -54,6 +56,8 @@ export default function OnboardingPage() {
     })
     const data = await res.json()
     if (!res.ok) { setError(data.error || 'Organization not found'); setLoading(false); return }
+    // Refresh server components so the layout picks up the new org
+    router.refresh()
     router.push('/dashboard')
   }
 
