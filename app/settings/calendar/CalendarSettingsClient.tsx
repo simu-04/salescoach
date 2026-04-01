@@ -100,8 +100,8 @@ function CalendarCard({
     <div
       className="rounded-2xl p-5"
       style={{
-        background: 'rgba(13,13,26,0.95)',
-        border: `1px solid ${isConnected ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.07)'}`,
+        background: 'var(--card-bg)',
+        border: `1px solid ${isConnected ? 'rgba(99,102,241,0.25)' : 'var(--card-border)'}`,
         backdropFilter: 'blur(16px)',
         boxShadow: isConnected
           ? '0 8px 32px rgba(99,102,241,0.08)'
@@ -113,7 +113,7 @@ function CalendarCard({
         <div
           className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
           style={{
-            background: 'rgba(255,255,255,0.05)',
+            background: 'var(--tag-bg)',
             border: '1px solid rgba(255,255,255,0.08)',
           }}
         >
@@ -123,7 +123,7 @@ function CalendarCard({
         {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-semibold text-white">{label}</span>
+            <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{label}</span>
             {isConnected ? (
               <span
                 className="text-xs font-semibold px-2 py-0.5 rounded-full"
@@ -139,16 +139,16 @@ function CalendarCard({
               <span
                 className="text-xs px-2 py-0.5 rounded-full"
                 style={{
-                  background: 'rgba(255,255,255,0.04)',
+                  background: 'var(--input-bg)',
                   border: '1px solid rgba(255,255,255,0.08)',
-                  color: 'rgba(255,255,255,0.3)',
+                  color: 'var(--text-muted)',
                 }}
               >
                 Not connected
               </span>
             )}
           </div>
-          <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>
             {isConnected && connection
               ? `Connected ${formatDistanceToNow(new Date(connection.connectedAt), { addSuffix: true })}`
               : description}
@@ -227,8 +227,8 @@ export function CalendarSettingsClient({ connections, flashConnected, flashError
         <a
           href="/settings"
           className="text-sm flex items-center gap-1.5 mb-4 transition-colors"
-          style={{ color: 'rgba(255,255,255,0.35)' }}
-          onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.7)')}
+          style={{ color: 'var(--text-muted)' }}
+          onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
           onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -236,8 +236,8 @@ export function CalendarSettingsClient({ connections, flashConnected, flashError
           </svg>
           Settings
         </a>
-        <h1 className="text-2xl font-bold text-white tracking-tight">Calendar Integration</h1>
-        <p className="mt-1.5 text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
+        <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Calendar Integration</h1>
+        <p className="mt-1.5 text-sm" style={{ color: 'var(--text-secondary)' }}>
           Connect your calendar and every sales meeting gets recorded and analysed — zero manual work.
         </p>
       </div>
@@ -246,12 +246,12 @@ export function CalendarSettingsClient({ connections, flashConnected, flashError
       <div
         className="rounded-2xl p-5 mb-6"
         style={{
-          background: 'rgba(13,13,26,0.95)',
+          background: 'var(--card-bg)',
           border: '1px solid rgba(255,255,255,0.07)',
           backdropFilter: 'blur(16px)',
         }}
       >
-        <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>
+        <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
           Bot joins meetings on
         </p>
         <div className="flex flex-wrap gap-2">
@@ -271,12 +271,12 @@ export function CalendarSettingsClient({ connections, flashConnected, flashError
           ))}
           <div
             className="flex items-center px-3 py-1.5 rounded-lg text-xs"
-            style={{ color: 'rgba(255,255,255,0.25)' }}
+            style={{ color: 'var(--text-faint)' }}
           >
             + more
           </div>
         </div>
-        <p className="text-xs mt-3" style={{ color: 'rgba(255,255,255,0.3)' }}>
+        <p className="text-xs mt-3" style={{ color: 'var(--text-muted)' }}>
           The bot joins any meeting with a video link found in your calendar events.
         </p>
       </div>
@@ -359,11 +359,11 @@ export function CalendarSettingsClient({ connections, flashConnected, flashError
         <div
           className="mt-5 rounded-xl p-4"
           style={{
-            background: 'rgba(255,255,255,0.02)',
+            background: 'var(--bg-surface)',
             border: '1px solid rgba(255,255,255,0.06)',
           }}
         >
-          <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'rgba(255,255,255,0.25)' }}>
+          <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-faint)' }}>
             How it works
           </p>
           <div className="space-y-2">
@@ -376,7 +376,7 @@ export function CalendarSettingsClient({ connections, flashConnected, flashError
             ].map(([icon, text]) => (
               <div key={text as string} className="flex items-start gap-2">
                 <span className="text-sm mt-0.5">{icon}</span>
-                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>{text}</p>
+                <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{text}</p>
               </div>
             ))}
           </div>
@@ -384,14 +384,14 @@ export function CalendarSettingsClient({ connections, flashConnected, flashError
       )}
 
       {/* Powered by */}
-      <p className="mt-5 text-center text-xs" style={{ color: 'rgba(255,255,255,0.18)' }}>
+      <p className="mt-5 text-center text-xs" style={{ color: 'var(--text-faint)' }}>
         Recording powered by{' '}
         <a
           href="https://recall.ai"
           target="_blank"
           rel="noopener noreferrer"
-          style={{ color: 'rgba(255,255,255,0.3)' }}
-          onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}
+          style={{ color: 'var(--text-muted)' }}
+          onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
           onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.3)')}
         >
           Recall.ai

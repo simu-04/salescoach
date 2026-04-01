@@ -75,9 +75,9 @@ export function UserManagementClient({ members: initial, currentUserId }: Props)
   const active  = members.filter((m) => m.role !== 'pending')
 
   const panelStyle: React.CSSProperties = {
-    background:    'rgba(13,13,26,0.95)',
+    background:    'var(--card-bg)',
     backdropFilter:'blur(16px)',
-    border:        '1px solid rgba(255,255,255,0.07)',
+    border:        '1px solid var(--card-border)',
     borderRadius:  '16px',
     overflow:      'hidden',
   }
@@ -97,7 +97,7 @@ export function UserManagementClient({ members: initial, currentUserId }: Props)
       {pending.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <h2 className="text-base font-semibold text-white">Pending Approval</h2>
+            <h2 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Pending Approval</h2>
             <span
               className="text-xs px-2 py-0.5 rounded-full font-bold"
               style={{ background: 'rgba(251,191,36,0.12)', color: '#fcd34d', border: '1px solid rgba(251,191,36,0.25)' }}
@@ -123,18 +123,18 @@ export function UserManagementClient({ members: initial, currentUserId }: Props)
 
       {/* Active members */}
       <div>
-        <h2 className="text-base font-semibold text-white mb-3">
+        <h2 className="text-base font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
           Team Members{' '}
-          <span className="text-sm font-normal" style={{ color: 'rgba(255,255,255,0.3)' }}>
+          <span className="text-sm font-normal" style={{ color: 'var(--text-faint)' }}>
             ({active.length})
           </span>
         </h2>
         {active.length === 0 ? (
           <div
             className="p-10 text-center rounded-2xl"
-            style={{ border: '1px dashed rgba(255,255,255,0.08)', background: 'rgba(13,13,26,0.6)' }}
+            style={{ border: '1px dashed var(--border-mid)', background: 'var(--bg-surface)' }}
           >
-            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.25)' }}>No active members yet.</p>
+            <p className="text-sm" style={{ color: 'var(--text-faint)' }}>No active members yet.</p>
           </div>
         ) : (
           <div style={panelStyle}>
@@ -172,8 +172,8 @@ export function UserManagementClient({ members: initial, currentUserId }: Props)
             </svg>
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-white mb-1">Invite your team</h3>
-            <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            <h3 className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>Invite your team</h3>
+            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
               Share your workspace ID with reps. They join via the signup page and appear here as pending.
             </p>
           </div>
@@ -200,7 +200,7 @@ function MemberRow({
   return (
     <div
       className="flex items-center gap-4 px-5 py-4"
-      style={hasBorder ? { borderBottom: '1px solid rgba(255,255,255,0.05)' } : {}}
+      style={hasBorder ? { borderBottom: '1px solid var(--border-subtle)' } : {}}
     >
       {/* Avatar */}
       {member.avatar_url ? (
@@ -208,7 +208,7 @@ function MemberRow({
           src={member.avatar_url}
           alt={member.full_name ?? ''}
           className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-          style={{ border: '1px solid rgba(255,255,255,0.1)' }}
+          style={{ border: '1px solid var(--border-mid)' }}
         />
       ) : (
         <div
@@ -224,11 +224,11 @@ function MemberRow({
 
       {/* Name + joined */}
       <div className="flex-1 min-w-0">
-        <div className="text-white text-sm font-semibold truncate">
+        <div className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
           {member.full_name || 'Unnamed user'}
-          {isSelf && <span className="ml-2 text-xs font-normal" style={{ color: 'rgba(255,255,255,0.3)' }}>(you)</span>}
+          {isSelf && <span className="ml-2 text-xs font-normal" style={{ color: 'var(--text-faint)' }}>(you)</span>}
         </div>
-        <div className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
+        <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
           Joined {joined}
         </div>
       </div>
@@ -263,9 +263,9 @@ function MemberRow({
               disabled={!!loading}
               className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all disabled:opacity-50"
               style={{
-                background: 'rgba(255,255,255,0.06)',
-                border:     '1px solid rgba(255,255,255,0.1)',
-                color:      'rgba(255,255,255,0.7)',
+                background: 'var(--tag-bg)',
+                border:     '1px solid var(--border-mid)',
+                color:      'var(--text-secondary)',
               }}
             >
               Make Admin
@@ -277,9 +277,9 @@ function MemberRow({
               disabled={!!loading}
               className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all disabled:opacity-50"
               style={{
-                background: 'rgba(255,255,255,0.06)',
-                border:     '1px solid rgba(255,255,255,0.1)',
-                color:      'rgba(255,255,255,0.7)',
+                background: 'var(--tag-bg)',
+                border:     '1px solid var(--border-mid)',
+                color:      'var(--text-secondary)',
               }}
             >
               Demote to Rep
@@ -290,9 +290,9 @@ function MemberRow({
             disabled={!!loading}
             title="Remove from org"
             className="transition-all disabled:opacity-50 p-1.5 rounded-lg"
-            style={{ color: 'rgba(255,255,255,0.2)' }}
+            style={{ color: 'var(--text-faint)' }}
             onMouseEnter={(e) => (e.currentTarget.style.color = '#f87171')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.2)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-faint)')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}

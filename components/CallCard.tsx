@@ -85,13 +85,13 @@ export function CallCard({ call, talkRatio, topRecommendation, currentUserId, cu
         className="group relative rounded-2xl overflow-hidden transition-all duration-200"
         style={{
           background: hovered
-            ? `linear-gradient(135deg, rgba(13,13,26,0.98) 0%, ${accent.hover} 100%)`
-            : 'rgba(13,13,26,0.95)',
-          border: '1px solid rgba(255,255,255,0.07)',
+            ? `linear-gradient(135deg, var(--card-bg-hover) 0%, ${accent.hover} 100%)`
+            : 'var(--card-bg)',
+          border: '1px solid var(--card-border)',
           borderLeft: `3px solid ${accent.left}`,
           boxShadow: hovered
-            ? `${accent.glow}, 0 16px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.04)`
-            : '0 2px 8px rgba(0,0,0,0.3)',
+            ? `${accent.glow}, 0 8px 24px rgba(0,0,0,0.12)`
+            : '0 1px 4px rgba(0,0,0,0.06)',
           transform: hovered ? 'translateY(-2px) scale(1.002)' : 'translateY(0) scale(1)',
           backdropFilter: 'blur(16px)',
         }}
@@ -102,20 +102,20 @@ export function CallCard({ call, talkRatio, topRecommendation, currentUserId, cu
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 flex-wrap">
                 <VerdictBadge verdict={call.verdict} size="sm" />
-                <h3 className="text-sm font-semibold text-white truncate">
+                <h3 className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
                   {call.file_name}
                 </h3>
               </div>
 
               {call.rep_name && currentUserRole === 'admin' && (
-                <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                  by <span style={{ color: 'rgba(255,255,255,0.5)' }}>{call.rep_name}</span>
+                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                  by <span style={{ color: 'var(--text-secondary)' }}>{call.rep_name}</span>
                 </p>
               )}
 
               <div className="mt-2">
                 {isProcessing && (
-                  <p className="text-sm flex items-center gap-2" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                  <p className="text-sm flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
                     <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
                     Analyzing call...
                   </p>
@@ -126,7 +126,7 @@ export function CallCard({ call, talkRatio, topRecommendation, currentUserId, cu
                   </p>
                 )}
                 {call.status === 'complete' && call.verdict_reason && (
-                  <p className="text-sm line-clamp-1" style={{ color: 'rgba(255,255,255,0.65)' }}>
+                  <p className="text-sm line-clamp-1" style={{ color: 'var(--text-secondary)' }}>
                     {call.verdict_reason}
                   </p>
                 )}
@@ -135,7 +135,7 @@ export function CallCard({ call, talkRatio, topRecommendation, currentUserId, cu
               {topRecommendation && call.status === 'complete' && call.verdict !== 'won' && (
                 <div className="mt-2 flex items-start gap-1.5">
                   <span className="text-amber-400 text-xs mt-0.5 flex-shrink-0">→</span>
-                  <p className="text-xs line-clamp-1" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                  <p className="text-xs line-clamp-1" style={{ color: 'var(--text-muted)' }}>
                     {topRecommendation}
                   </p>
                 </div>
@@ -165,9 +165,9 @@ export function CallCard({ call, talkRatio, topRecommendation, currentUserId, cu
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmOpen(true) }}
                     title="Delete call"
                     className="opacity-0 group-hover:opacity-100 p-1 rounded-lg transition-all"
-                    style={{ color: 'rgba(255,255,255,0.2)' }}
+                    style={{ color: 'var(--text-faint)' }}
                     onMouseEnter={(e) => { e.currentTarget.style.color = '#f87171'; e.currentTarget.style.background = 'rgba(239,68,68,0.1)' }}
-                    onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.2)'; e.currentTarget.style.background = 'transparent' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-faint)'; e.currentTarget.style.background = 'transparent' }}
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
@@ -176,7 +176,7 @@ export function CallCard({ call, talkRatio, topRecommendation, currentUserId, cu
                   </button>
                 )}
               </div>
-              <div className="flex items-center gap-3 text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>
+              <div className="flex items-center gap-3 text-xs" style={{ color: 'var(--text-faint)' }}>
                 {call.duration_seconds && <span>{formatDuration(call.duration_seconds)}</span>}
                 {call.file_size        && <span>{formatFileSize(call.file_size)}</span>}
               </div>
@@ -184,7 +184,7 @@ export function CallCard({ call, talkRatio, topRecommendation, currentUserId, cu
           </div>
 
           {talkRatio && call.status === 'complete' && (
-            <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="mt-4 pt-4" style={{ borderTop: '1px solid var(--border-subtle)' }}>
               <TalkRatioBar repRatio={talkRatio.rep} prospectRatio={talkRatio.prospect} />
             </div>
           )}

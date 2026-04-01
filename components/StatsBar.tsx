@@ -17,14 +17,14 @@ interface StatItemProps {
 
 function StatCard({ label, value, subtext, highlight = 'normal', icon }: StatItemProps) {
   const valueStyle = {
-    normal:  { color: '#ffffff' },
+    normal:  { color: 'var(--text-primary)' },
     success: { color: '#4ade80', textShadow: '0 0 20px rgba(74,222,128,0.4)' },
     warning: { color: '#fbbf24', textShadow: '0 0 20px rgba(251,191,36,0.4)' },
     danger:  { color: '#f87171', textShadow: '0 0 20px rgba(248,113,113,0.4)' },
   }[highlight]
 
   const borderStyle = {
-    normal:  'rgba(255,255,255,0.07)',
+    normal:  'var(--card-border)',
     success: 'rgba(74,222,128,0.2)',
     warning: 'rgba(251,191,36,0.2)',
     danger:  'rgba(248,113,113,0.2)',
@@ -41,16 +41,16 @@ function StatCard({ label, value, subtext, highlight = 'normal', icon }: StatIte
     <div
       className="flex flex-col gap-1.5 p-4 rounded-2xl transition-all duration-200"
       style={{
-        background: `linear-gradient(135deg, rgba(13,13,26,0.98) 0%, ${bgGlow} 100%)`,
+        background: `linear-gradient(135deg, var(--card-bg) 0%, ${bgGlow} 100%)`,
         border: `1px solid ${borderStyle}`,
         backdropFilter: 'blur(12px)',
       }}
     >
       <div className="flex items-center gap-2">
-        {icon && <span style={{ color: 'rgba(255,255,255,0.3)' }}>{icon}</span>}
+        {icon && <span style={{ color: 'var(--text-muted)' }}>{icon}</span>}
         <p
           className="text-[10px] font-semibold uppercase tracking-[0.1em]"
-          style={{ color: 'rgba(255,255,255,0.35)' }}
+          style={{ color: 'var(--text-muted)' }}
         >
           {label}
         </p>
@@ -59,7 +59,7 @@ function StatCard({ label, value, subtext, highlight = 'normal', icon }: StatIte
         {value}
       </p>
       {subtext && (
-        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>
+        <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
           {subtext}
         </p>
       )}

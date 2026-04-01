@@ -54,9 +54,9 @@ export function ConfirmModal({
       <div
         className="relative w-full max-w-sm rounded-2xl p-6"
         style={{
-          background: 'rgba(18,18,30,0.97)',
+          background: 'var(--modal-bg)',
           backdropFilter: 'blur(24px)',
-          border: '1px solid rgba(255,255,255,0.1)',
+          border: '1px solid var(--border-mid)',
           boxShadow: '0 32px 80px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08)',
         }}
       >
@@ -74,10 +74,10 @@ export function ConfirmModal({
           </svg>
         </div>
 
-        <h2 id="modal-title" className="text-white font-bold text-lg mb-2 tracking-tight">
+        <h2 id="modal-title" style={{ color: 'var(--text-primary)' }} className="font-bold text-lg mb-2 tracking-tight">
           {title}
         </h2>
-        <p className="text-sm leading-relaxed mb-6" style={{ color: 'rgba(255,255,255,0.5)' }}>
+        <p className="text-sm leading-relaxed mb-6" style={{ color: 'var(--text-secondary)' }}>
           {message}
         </p>
 
@@ -88,9 +88,9 @@ export function ConfirmModal({
             disabled={loading}
             className="px-4 py-2 rounded-xl text-sm font-semibold transition-all disabled:opacity-50"
             style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              color: 'rgba(255,255,255,0.65)',
+              background: 'var(--tag-bg)',
+              border: '1px solid var(--border-mid)',
+              color: 'var(--text-secondary)',
             }}
           >
             Cancel

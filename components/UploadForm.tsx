@@ -120,15 +120,15 @@ export function UploadForm() {
   const isActive = uploadState === 'uploading' || uploadState === 'processing'
 
   const inputStyle: React.CSSProperties = {
-    background: 'rgba(255,255,255,0.04)',
-    border:     '1px solid rgba(255,255,255,0.1)',
-    color:      'white',
+    background:   'var(--input-bg)',
+    border:       '1px solid var(--border-mid)',
+    color:        'var(--text-primary)',
     borderRadius: '12px',
-    padding:    '10px 14px',
-    fontSize:   '14px',
-    width:      '100%',
-    outline:    'none',
-    transition: 'all 0.15s ease',
+    padding:      '10px 14px',
+    fontSize:     '14px',
+    width:        '100%',
+    outline:      'none',
+    transition:   'all 0.15s ease',
   }
 
   return (
@@ -137,14 +137,14 @@ export function UploadForm() {
       {/* ── Metadata fields ─────────────────────────────────── */}
       <div
         className="rounded-2xl p-5 space-y-4"
-        style={{ background: 'rgba(13,13,26,0.95)', border: '1px solid rgba(255,255,255,0.07)' }}
+        style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)' }}
       >
-        <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.35)' }}>
+        <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
           Call details
         </p>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.45)' }}>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
               Product / Service <span style={{ color: '#f87171' }}>*</span>
             </label>
             <input
@@ -155,11 +155,11 @@ export function UploadForm() {
               disabled={isActive}
               style={inputStyle}
               onFocus={(e) => { e.currentTarget.style.borderColor = 'rgba(99,102,241,0.5)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.1)' }}
-              onBlur={(e)  => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.boxShadow = 'none' }}
+              onBlur={(e)  => { e.currentTarget.style.borderColor = 'var(--border-mid)'; e.currentTarget.style.boxShadow = 'none' }}
             />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.45)' }}>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
               Prospect / Company <span style={{ color: '#f87171' }}>*</span>
             </label>
             <input
@@ -170,12 +170,12 @@ export function UploadForm() {
               disabled={isActive}
               style={inputStyle}
               onFocus={(e) => { e.currentTarget.style.borderColor = 'rgba(99,102,241,0.5)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.1)' }}
-              onBlur={(e)  => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.boxShadow = 'none' }}
+              onBlur={(e)  => { e.currentTarget.style.borderColor = 'var(--border-mid)'; e.currentTarget.style.boxShadow = 'none' }}
             />
           </div>
         </div>
         {metaReady && (
-          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
             File will be saved as:{' '}
             <span className="font-mono" style={{ color: 'rgba(165,180,252,0.8)' }}>
               {buildFileName(product, prospect, 'recording.mp3')}
@@ -193,13 +193,13 @@ export function UploadForm() {
         className="relative rounded-3xl p-14 text-center transition-all duration-300"
         style={{
           background: isDragging
-            ? 'rgba(99,102,241,0.08)'
-            : 'rgba(13,13,26,0.95)',
+            ? 'rgba(99,102,241,0.06)'
+            : 'var(--card-bg)',
           border: isDragging
             ? '2px dashed rgba(99,102,241,0.6)'
             : !metaReady
-              ? '2px dashed rgba(255,255,255,0.05)'
-              : '2px dashed rgba(255,255,255,0.1)',
+              ? '2px dashed var(--border-subtle)'
+              : '2px dashed var(--border-mid)',
           cursor: isActive || !metaReady ? 'not-allowed' : 'pointer',
           opacity: !metaReady ? 0.5 : 1,
           boxShadow: isDragging ? '0 0 32px rgba(99,102,241,0.2), inset 0 0 32px rgba(99,102,241,0.05)' : 'none',
@@ -207,14 +207,14 @@ export function UploadForm() {
         }}
         onMouseEnter={(e) => {
           if (metaReady && !isActive && !isDragging) {
-            e.currentTarget.style.borderColor = 'rgba(99,102,241,0.35)'
+            e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)'
             e.currentTarget.style.background  = 'rgba(99,102,241,0.04)'
           }
         }}
         onMouseLeave={(e) => {
           if (!isDragging) {
-            e.currentTarget.style.borderColor = metaReady ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.05)'
-            e.currentTarget.style.background  = 'rgba(13,13,26,0.95)'
+            e.currentTarget.style.borderColor = metaReady ? 'var(--border-mid)' : 'var(--border-subtle)'
+            e.currentTarget.style.background  = 'var(--card-bg)'
           }
         }}
       >
@@ -238,7 +238,7 @@ export function UploadForm() {
         >
           <svg
             className="w-8 h-8"
-            style={{ color: isDragging ? '#818cf8' : 'rgba(255,255,255,0.3)' }}
+            style={{ color: isDragging ? '#818cf8' : 'var(--text-muted)' }}
             fill="none" viewBox="0 0 24 24" stroke="currentColor"
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
@@ -249,29 +249,29 @@ export function UploadForm() {
         {/* States */}
         {uploadState === 'idle' && (
           <>
-            <p className="text-white font-semibold text-lg mb-1.5">
+            <p className="font-semibold text-lg mb-1.5" style={{ color: 'var(--text-primary)' }}>
               {metaReady ? 'Drop your call recording here' : 'Fill in the details above first'}
             </p>
             {metaReady
-              ? <p className="text-base mb-3" style={{ color: 'rgba(255,255,255,0.4)' }}>or click to browse</p>
-              : <p className="text-sm" style={{ color: 'rgba(255,255,255,0.3)' }}>Product and prospect name are required</p>
+              ? <p className="text-base mb-3" style={{ color: 'var(--text-secondary)' }}>or click to browse</p>
+              : <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Product and prospect name are required</p>
             }
-            {metaReady && <p className="text-sm" style={{ color: 'rgba(255,255,255,0.2)' }}>MP3, MP4, WAV, WebM · Max 100MB</p>}
+            {metaReady && <p className="text-sm" style={{ color: 'var(--text-faint)' }}>MP3, MP4, WAV, WebM · Max 100MB</p>}
           </>
         )}
 
         {uploadState === 'uploading' && (
           <>
-            <p className="text-white font-semibold text-lg mb-1.5">Uploading…</p>
-            <p className="text-base" style={{ color: 'rgba(255,255,255,0.4)' }}>{progress}%</p>
+            <p className="font-semibold text-lg mb-1.5" style={{ color: 'var(--text-primary)' }}>Uploading…</p>
+            <p className="text-base" style={{ color: 'var(--text-secondary)' }}>{progress}%</p>
             {renamedFile && <p className="text-xs mt-2 font-mono" style={{ color: 'rgba(165,180,252,0.6)' }}>{renamedFile}</p>}
           </>
         )}
 
         {uploadState === 'processing' && (
           <>
-            <p className="text-white font-semibold text-lg mb-1.5">Analyzing call…</p>
-            <p className="text-base" style={{ color: 'rgba(255,255,255,0.4)' }}>Deepgram → Claude · 30–90 seconds</p>
+            <p className="font-semibold text-lg mb-1.5" style={{ color: 'var(--text-primary)' }}>Analyzing call…</p>
+            <p className="text-base" style={{ color: 'var(--text-secondary)' }}>Deepgram → Claude · 30–90 seconds</p>
           </>
         )}
 
