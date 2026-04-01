@@ -4,9 +4,12 @@
  *
  * This is the engine. Everything else is UI.
  *
- * Designed to be called from an API route today.
- * Designed to be dropped into a job queue (Inngest, Trigger.dev) tomorrow
- * without changing any of this logic — just swap the caller.
+ * Two entry points:
+ *   processCall()        → for manually uploaded files (storage path → signed URL)
+ *   processCallFromUrl() → for Recall.ai bot recordings (direct presigned URL)
+ *
+ * Both share the same inner pipeline via _runPipeline().
+ * Designed to be dropped into a job queue (Inngest, Trigger.dev) without changing logic.
  */
 import { createServerAdminClient } from '@/lib/supabase/server'
 import { transcribeAudio } from '@/lib/deepgram'
@@ -19,46 +22,42 @@ export interface PipelineInput {
   fileName: string
 }
 
+export interface PipelineInputFromUrl {
+  callId: string
+  audioUrl: string
+  fileName: string
+}
+
 export interface PipelineResult {
   success: boolean
   callId: string
   error?: string
 }
 
-export async function processCall(input: PipelineInput): Promise<PipelineResult> {
-  const { callId, storagePath, fileName } = input
+// ─── Shared inner pipeline ────────────────────────────────────────────────────
+
+async function _runPipeline(
+  callId: string,
+  audioUrl: string,
+  fileName: string
+): Promise<PipelineResult> {
   const supabase = createServerAdminClient()
 
   try {
-    // ─── Step 1: Get a signed URL for the audio file ─────────────────────────
-    // Deepgram fetches the audio directly from this URL.
-    // We use a signed URL (expires in 1 hour) rather than making the bucket public.
-    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-      .from('call-recordings')
-      .createSignedUrl(storagePath, 3600) // 1 hour expiry
-
-    if (signedUrlError || !signedUrlData?.signedUrl) {
-      throw new Error(`Failed to create signed URL: ${signedUrlError?.message}`)
-    }
-
-    const audioUrl = signedUrlData.signedUrl
-
-    // ─── Step 2: Transcribe with Deepgram ────────────────────────────────────
+    // ─── Step 1: Transcribe with Deepgram ──────────────────────────────────
     console.log(`[Pipeline] Transcribing call ${callId} with Deepgram...`)
     const transcript = await transcribeAudio(audioUrl)
 
-    // Update duration now that we have it from Deepgram
     await supabase
       .from('calls')
       .update({ duration_seconds: transcript.duration_seconds })
       .eq('id', callId)
 
-    // ─── Step 3: Extract insights with Claude ────────────────────────────────
+    // ─── Step 2: Extract insights with Claude ──────────────────────────────
     console.log(`[Pipeline] Extracting insights for call ${callId} with Claude...`)
     const insights = await extractInsights(transcript.text)
 
-    // ─── Step 4: Persist to Supabase ─────────────────────────────────────────
-    // Store full insight row
+    // ─── Step 3: Persist to Supabase ───────────────────────────────────────
     const { error: insightError } = await supabase.from('insights').insert({
       call_id: callId,
       transcript: transcript.text,
@@ -76,7 +75,6 @@ export async function processCall(input: PipelineInput): Promise<PipelineResult>
       throw new Error(`Failed to save insights: ${insightError.message}`)
     }
 
-    // Denormalize key fields onto the call row for fast dashboard queries
     const { error: callUpdateError } = await supabase
       .from('calls')
       .update({
@@ -91,7 +89,7 @@ export async function processCall(input: PipelineInput): Promise<PipelineResult>
       throw new Error(`Failed to update call status: ${callUpdateError.message}`)
     }
 
-    // ─── Step 5: Send Slack notification ─────────────────────────────────────
+    // ─── Step 4: Slack notification ────────────────────────────────────────
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
     await sendSlackNotification({
       callId,
@@ -100,23 +98,54 @@ export async function processCall(input: PipelineInput): Promise<PipelineResult>
       callUrl: `${appUrl}/calls/${callId}`,
     })
 
-    console.log(`[Pipeline] Call ${callId} processed successfully. Verdict: ${insights.verdict}`)
-
+    console.log(`[Pipeline] Call ${callId} processed. Verdict: ${insights.verdict}`)
     return { success: true, callId }
 
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'
     console.error(`[Pipeline] Failed to process call ${callId}:`, message)
 
-    // Mark the call as failed — don't leave it stuck in "processing" forever
     await supabase
       .from('calls')
-      .update({
-        status: 'failed',
-        error_message: message,
-      })
+      .update({ status: 'failed', error_message: message })
       .eq('id', callId)
 
     return { success: false, callId, error: message }
   }
+}
+
+// ─── Entry point 1: manually uploaded file (Supabase Storage) ─────────────────
+
+export async function processCall(input: PipelineInput): Promise<PipelineResult> {
+  const { callId, storagePath, fileName } = input
+  const supabase = createServerAdminClient()
+
+  // Get a signed URL from Supabase Storage — Deepgram fetches audio from this URL.
+  // Signed URL expires in 1 hour (well past any reasonable transcription time).
+  const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+    .from('call-recordings')
+    .createSignedUrl(storagePath, 3600)
+
+  if (signedUrlError || !signedUrlData?.signedUrl) {
+    const msg = `Failed to create signed URL: ${signedUrlError?.message}`
+    await supabase
+      .from('calls')
+      .update({ status: 'failed', error_message: msg })
+      .eq('id', callId)
+    return { success: false, callId, error: msg }
+  }
+
+  return _runPipeline(callId, signedUrlData.signedUrl, fileName)
+}
+
+// ─── Entry point 2: Recall.ai bot recording (direct presigned URL) ────────────
+
+/**
+ * Used by the Recall webhook handler.
+ * The audio URL comes directly from Recall's media_shortcuts.audio_mixed.data.presigned_url.
+ * No Supabase Storage upload needed — Deepgram fetches it straight from Recall's CDN.
+ */
+export async function processCallFromUrl(input: PipelineInputFromUrl): Promise<PipelineResult> {
+  const { callId, audioUrl, fileName } = input
+  return _runPipeline(callId, audioUrl, fileName)
 }
