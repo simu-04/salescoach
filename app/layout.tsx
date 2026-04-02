@@ -4,6 +4,7 @@ import './globals.css'
 import { createServerClient } from '@/lib/supabase/server'
 import { AppShell } from '@/components/AppShell'
 import { ThemeProvider } from '@/components/ThemeProvider'
+import { NavigationProgress } from '@/components/NavigationProgress'
 import type { Profile, Organization } from '@/types'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -44,6 +45,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} antialiased`} style={{ background: 'var(--bg-base)', color: 'var(--text-primary)' }}>
         <ThemeProvider>
+          <NavigationProgress />
           {profile ? (
             <AppShell profile={profile} org={org}>
               {children}

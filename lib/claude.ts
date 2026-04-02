@@ -42,15 +42,15 @@ const INSIGHT_USER_PROMPT = (transcript: string) => `Analyze this sales call tra
 {
   "summary": "3 sentences: (1) what product/service was being sold and to whom, (2) how the prospect responded and what their key concern was, (3) what the likely outcome is and why",
   "verdict": "won" | "at_risk" | "lost",
-  "verdict_reason": "One sentence citing the single most decisive moment or exchange. Quote the prospect's words if possible.",
+  "verdict_reason": "One sentence, max 20 words. Quote the prospect if possible. No filler.",
   "objections": [
-    "Format each as: '[Objection]: [How rep handled it — deflected/addressed/ignored]'. Example: 'Pricing too high vs competitor: Rep acknowledged but failed to quantify ROI, leaving objection unresolved'"
+    "Max 10 words each. Format: '[Objection] — [rep's response in 3 words]'. Example: 'Budget tight, only 89k available — rep ignored'. No filler."
   ],
   "risk_signals": [
-    "Format as: '[Specific moment or pattern] → [Why it hurts conversion]'. Max 4. Be brutal and specific."
+    "Max 10 words each. Lead with the specific moment or quote. Example: 'Rep declared sale done before payment confirmed'. Max 4."
   ],
   "buying_signals": [
-    "Format as: '[Specific moment] → [Why this is a buying signal]'. Include even weak signals. Max 3. Empty array if none."
+    "Max 8 words each. One crisp observation. Example: 'Prospect asked about onboarding timeline'. Max 3. Empty array if none."
   ],
   "competitor_mentions": [
     "Format as: '[Competitor name]: [context — what was said about them]'. Empty array if none."
@@ -58,8 +58,8 @@ const INSIGHT_USER_PROMPT = (transcript: string) => `Analyze this sales call tra
   "talk_ratio": { "rep": <integer 0-100>, "prospect": <integer 0-100> },
   "top_recommendation": "The single highest-leverage thing the rep should do differently in their next call. Start with the verb. Include what to SAY. Example: 'Open with the question: What does your current process cost you per month in lost time? — then stay silent. Right now you jump to pitching before discovering pain.'",
   "coaching": {
-    "did_well": "One specific thing the rep did well in this call. Be genuine — even struggling reps do something right.",
-    "fix_immediately": "The one behaviour that most damaged this call's outcome. Be direct."
+    "did_well": "Max 12 words. One specific positive. Example: 'Uncovered budget constraint early with direct question'.",
+    "fix_immediately": "Max 12 words. The single biggest mistake. Example: 'Declared sale done before payment confirmed on call'."
   },
   "next_step_clarity": "clear" | "vague" | "none",
   "engagement_arc": "rising" | "flat" | "declining" | "mixed"

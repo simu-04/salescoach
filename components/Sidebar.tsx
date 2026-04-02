@@ -11,6 +11,12 @@ import { createBrowserClient } from '@/lib/supabase/client'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import type { Profile, Organization } from '@/types'
 
+function fireNavStart() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('nav-start'))
+  }
+}
+
 interface SidebarProps {
   profile:  Profile
   org:      Organization | null
@@ -66,6 +72,17 @@ const navItems: NavItem[] = [
       <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
           d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+    ),
+  },
+  {
+    label: 'Trash',
+    href:  '/trash',
+    roles: ['admin'],
+    icon: (
+      <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
+          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
       </svg>
     ),
   },
@@ -168,6 +185,7 @@ export function Sidebar({ profile, org, onClose }: SidebarProps) {
             <Link
               key={item.href}
               href={item.href}
+              onClick={() => !isActive && fireNavStart()}
               className={`
                 flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150
                 ${isActive ? 'nav-active' : 'hover:bg-white/[0.04]'}

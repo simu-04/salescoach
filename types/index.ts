@@ -53,6 +53,8 @@ export interface CallRow {
   user_id:          string | null
   org_id:           string | null
   rep_name:         string | null
+  // Soft-delete
+  deleted_at:       string | null
 }
 
 export interface InsightRow {

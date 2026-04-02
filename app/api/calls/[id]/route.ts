@@ -2,7 +2,7 @@
  * /api/calls/[id]
  *
  * GET    — single call + insights (RLS-scoped)
- * DELETE — delete call + its storage file (owner or admin)
+ * DELETE — soft-delete (moves to trash). Owner or admin only.
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient, createServerAdminClient } from '@/lib/supabase/server'
@@ -60,10 +60,9 @@ export async function DELETE(
 
     const { id } = params
 
-    // Fetch call to verify ownership + get storage path
     const { data: call, error: callError } = await supabase
       .from('calls')
-      .select('id, user_id, org_id, storage_path')
+      .select('id, user_id, org_id')
       .eq('id', id)
       .single()
 
@@ -71,26 +70,18 @@ export async function DELETE(
       return NextResponse.json<ApiError>({ error: 'Call not found' }, { status: 404 })
     }
 
-    // Use admin client for delete operations (bypasses RLS for cleanliness)
+    // Soft-delete: set deleted_at timestamp
     const adminClient = createServerAdminClient()
+    const { error: updateError } = await adminClient
+      .from('calls')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id)
 
-    // Delete insights first (foreign key)
-    await adminClient.from('insights').delete().eq('call_id', id)
-
-    // Delete call record
-    const { error: deleteError } = await adminClient.from('calls').delete().eq('id', id)
-    if (deleteError) {
-      return NextResponse.json<ApiError>({ error: deleteError.message }, { status: 500 })
+    if (updateError) {
+      return NextResponse.json<ApiError>({ error: updateError.message }, { status: 500 })
     }
 
-    // Delete storage file (best-effort — don't fail if already gone)
-    if (call.storage_path) {
-      await adminClient.storage
-        .from('call-recordings')
-        .remove([call.storage_path])
-    }
-
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, trashed: true })
 
   } catch (error) {
     console.error(`DELETE /api/calls/${params.id} error:`, error)
