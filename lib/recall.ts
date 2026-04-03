@@ -12,7 +12,7 @@
 import { createHmac, timingSafeEqual } from 'crypto'
 
 // Recall region — change to eu-west-2 if your account is EU
-const RECALL_API_BASE = 'https://us-west-2.recall.ai/api/v1'
+const RECALL_API_BASE = 'https://ap-northeast-1.recall.ai/api/v1'
 
 function getApiKey(): string {
   const key = process.env.RECALL_API_KEY
